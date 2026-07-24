@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-.SHELLFLAGS := -eu -o pipefail -c
+.SHELLFLAGS := -e -o pipefail -c
 
 RELEASE_TAG := pr45982-f5ed8537
 RELEASE_BASE_URL := https://github.com/dio/envoy-sni-session-cache-repro/releases/download/$(RELEASE_TAG)

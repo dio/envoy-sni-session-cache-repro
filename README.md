@@ -52,68 +52,17 @@ Both Envoy binaries must target the platform where the script is run.
 > environment. Building the candidate yourself from the PR commit provides
 > the strongest assurance.
 
-The upstream baseline is the official Tetrate Envoy dev archive. The candidate
-is an unofficial, one-off validation build attached to this repository's
+The Makefile detects macOS arm64 or Linux amd64 and downloads the matching
+binaries. The upstream baseline is the official Tetrate Envoy dev archive. The
+candidate is an unofficial validation build attached to the
 [`pr45982-f5ed8537` release](https://github.com/dio/envoy-sni-session-cache-repro/releases/tag/pr45982-f5ed8537).
 
-### macOS arm64
+Verify the candidate archive checksum and both embedded Envoy commit SHAs
+before running either binary:
 
 ```sh
-mkdir -p binaries
-
-curl -fL \
-  https://archive.tetratelabs.io/envoy/download/dev/envoy-dev-darwin-arm64.tar.xz \
-  -o binaries/envoy-dev-darwin-arm64.tar.xz
-
-curl -fL \
-  https://github.com/dio/envoy-sni-session-cache-repro/releases/download/pr45982-f5ed8537/envoy-pr45982-f5ed8537-darwin-arm64.tar.xz \
-  -o binaries/envoy-pr45982-f5ed8537-darwin-arm64.tar.xz
-curl -fL \
-  https://github.com/dio/envoy-sni-session-cache-repro/releases/download/pr45982-f5ed8537/SHA256SUMS \
-  -o binaries/SHA256SUMS
-
-(
-  cd binaries
-  grep 'darwin-arm64' SHA256SUMS | shasum -a 256 -c -
-  tar -tJf envoy-pr45982-f5ed8537-darwin-arm64.tar.xz
-)
-
-tar -xJf binaries/envoy-dev-darwin-arm64.tar.xz -C binaries
-tar -xJf binaries/envoy-pr45982-f5ed8537-darwin-arm64.tar.xz -C binaries
-chmod +x binaries/envoy-dev-darwin-arm64/bin/envoy
-chmod +x binaries/envoy-pr45982-f5ed8537-darwin-arm64/bin/envoy
+make verify
 ```
-
-### Linux amd64
-
-```sh
-mkdir -p binaries
-
-curl -fL \
-  https://archive.tetratelabs.io/envoy/download/dev/envoy-dev-linux-amd64.tar.xz \
-  -o binaries/envoy-dev-linux-amd64.tar.xz
-
-curl -fL \
-  https://github.com/dio/envoy-sni-session-cache-repro/releases/download/pr45982-f5ed8537/envoy-pr45982-f5ed8537-linux-amd64.tar.xz \
-  -o binaries/envoy-pr45982-f5ed8537-linux-amd64.tar.xz
-curl -fL \
-  https://github.com/dio/envoy-sni-session-cache-repro/releases/download/pr45982-f5ed8537/SHA256SUMS \
-  -o binaries/SHA256SUMS
-
-(
-  cd binaries
-  grep 'linux-amd64' SHA256SUMS | sha256sum -c -
-  tar -tJf envoy-pr45982-f5ed8537-linux-amd64.tar.xz
-)
-
-tar -xJf binaries/envoy-dev-linux-amd64.tar.xz -C binaries
-tar -xJf binaries/envoy-pr45982-f5ed8537-linux-amd64.tar.xz -C binaries
-chmod +x binaries/envoy-dev-linux-amd64/bin/envoy
-chmod +x binaries/envoy-pr45982-f5ed8537-linux-amd64/bin/envoy
-```
-
-The candidate archives also contain Envoy's `LICENSE`, `NOTICE`, and build
-metadata. They are test artifacts, not official Envoy releases.
 
 Checksums detect an incomplete or mismatched download. Because the checksum
 file is distributed with the release, it is not a substitute for independently
@@ -121,16 +70,12 @@ building and reviewing the source when stronger provenance is required.
 
 ## Run the comparison
 
-On macOS arm64:
-
 ```sh
-./reproduce.sh \
-  binaries/envoy-dev-darwin-arm64/bin/envoy \
-  binaries/envoy-pr45982-f5ed8537-darwin-arm64/bin/envoy
+make repro
 ```
 
-On Linux amd64, replace both `darwin-arm64` path components with
-`linux-amd64`.
+`make repro` runs the verification step first. Downloaded and extracted files
+remain under `.artifacts/`; remove them with `make clean`.
 
 Expected output:
 

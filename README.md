@@ -23,14 +23,19 @@ handshake for the second hostname and receives the correct certificate.
 
 | Role | Envoy commit | Expected result |
 | --- | --- | --- |
-| Affected upstream baseline | `8cac4c63` | `server1=200 server2=503` |
+| Affected Envoy 1.39.0 | platform-specific | `server1=200 server2=503` |
 | PR candidate | `f5ed8537` | `server1=200 server2=200` |
 
-The upstream commit is the exact Envoy main commit merged into the PR branch,
-so the comparison isolates the PR changes.
+Envoy 1.39.0 is an immutable released baseline that predates the fix. The
+candidate is the exact head that was approved and merged in PR #45982.
 
-- Upstream: `8cac4c63e8a905baa1f53020dd69f5914777a506`
+- Envoy 1.39.0 Darwin arm64: `8eea3285d6bdb89f8ea34632cfe7ce1608a8f374`
+- Envoy 1.39.0 Linux amd64: `9aed67d36497690a0d0dc65305ab823927441b77`
 - Candidate: `f5ed853725477db07c606a44a0cebce57ea8d1ed`
+
+The Darwin archive embeds the 1.39.0 release commit. The Linux archive embeds
+one additional test-only commit that fixes flaky TLS inspector tests. The
+Makefile verifies the expected commit separately for each platform.
 
 ## Requirements
 
@@ -53,8 +58,9 @@ Both Envoy binaries must target the platform where the script is run.
 > the strongest assurance.
 
 The Makefile detects macOS arm64 or Linux amd64 and downloads the matching
-binaries. The upstream baseline is the official Tetrate Envoy dev archive. The
-candidate is an unofficial validation build attached to the
+binaries. The affected baseline is the official, versioned
+[Envoy 1.39.0 release](https://github.com/envoyproxy/envoy/releases/tag/v1.39.0)
+archive. The candidate is an unofficial validation build attached to the
 [`pr45982-f5ed8537` release](https://github.com/dio/envoy-sni-session-cache-repro/releases/tag/pr45982-f5ed8537).
 
 Verify the candidate archive checksum and both embedded Envoy commit SHAs

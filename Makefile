@@ -3,8 +3,8 @@ SHELL := /bin/bash
 
 RELEASE_TAG := pr45982-f5ed8537
 RELEASE_BASE_URL := https://github.com/dio/envoy-sni-session-cache-repro/releases/download/$(RELEASE_TAG)
-UPSTREAM_BASE_URL := https://archive.tetratelabs.io/envoy/download/dev
-UPSTREAM_SHA := 8cac4c63e8a905baa1f53020dd69f5914777a506
+UPSTREAM_VERSION := v1.39.0
+UPSTREAM_BASE_URL := https://archive.tetratelabs.io/envoy/download/$(UPSTREAM_VERSION)
 CANDIDATE_SHA := f5ed853725477db07c606a44a0cebce57ea8d1ed
 ARTIFACT_DIR := .artifacts
 
@@ -13,19 +13,21 @@ HOST_PLATFORM := $(shell uname -s)/$(shell uname -m)
 ifeq ($(HOST_PLATFORM),Darwin/arm64)
 PLATFORM := darwin-arm64
 CHECKSUM_COMMAND := shasum -a 256
+UPSTREAM_SHA := 8eea3285d6bdb89f8ea34632cfe7ce1608a8f374
 else ifeq ($(HOST_PLATFORM),Linux/x86_64)
 PLATFORM := linux-amd64
 CHECKSUM_COMMAND := sha256sum
+UPSTREAM_SHA := 9aed67d36497690a0d0dc65305ab823927441b77
 else
 $(error Unsupported platform $(HOST_PLATFORM); supported platforms are Darwin/arm64 and Linux/x86_64)
 endif
 
-UPSTREAM_ARCHIVE_NAME := envoy-dev-$(PLATFORM).tar.xz
+UPSTREAM_ARCHIVE_NAME := envoy-$(UPSTREAM_VERSION)-$(PLATFORM).tar.xz
 CANDIDATE_ARCHIVE_NAME := envoy-pr45982-f5ed8537-$(PLATFORM).tar.xz
 UPSTREAM_ARCHIVE := $(ARTIFACT_DIR)/$(UPSTREAM_ARCHIVE_NAME)
 CANDIDATE_ARCHIVE := $(ARTIFACT_DIR)/$(CANDIDATE_ARCHIVE_NAME)
 CHECKSUMS := $(ARTIFACT_DIR)/SHA256SUMS
-UPSTREAM_BIN := $(ARTIFACT_DIR)/envoy-dev-$(PLATFORM)/bin/envoy
+UPSTREAM_BIN := $(ARTIFACT_DIR)/envoy-$(UPSTREAM_VERSION)-$(PLATFORM)/bin/envoy
 CANDIDATE_BIN := $(ARTIFACT_DIR)/envoy-pr45982-f5ed8537-$(PLATFORM)/bin/envoy
 
 .PHONY: help download verify repro clean
@@ -61,7 +63,7 @@ verify: download
 	  (cd "$(ARTIFACT_DIR)" && $(CHECKSUM_COMMAND) -c -)
 	tar -tJf "$(CANDIDATE_ARCHIVE)" >/dev/null
 	for directory in \
-	  "$(ARTIFACT_DIR)/envoy-dev-$(PLATFORM)" \
+	  "$(ARTIFACT_DIR)/envoy-$(UPSTREAM_VERSION)-$(PLATFORM)" \
 	  "$(ARTIFACT_DIR)/envoy-pr45982-f5ed8537-$(PLATFORM)"; do \
 	  if [[ -e "$$directory" ]]; then \
 	    rm -r -- "$$directory"; \
